@@ -1,11 +1,8 @@
 # servomotor-atmega8
-managing servomotor direction using atmega8 with LCD display
+PWM control
 
-push button_swtc to change direcion
+push UP and DOWN to managing speed
 
-# images
-clockwise mode
-![](images/clockwise.jpg)
+# PROTEUS PHOTO
 
-counter clockwise mode
-![](images/counter_clockwise.jpg)
+![](images/example.png)
