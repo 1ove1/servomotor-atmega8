@@ -45,13 +45,13 @@
 // общий размер буфера
 #define LCD_BUFFER      NUMBERS + LETTERS             
 // стандартная надпись
-#define CAPTION         " speed (ms): 01" 
+#define CAPTION         " speed (ms): 50" 
 // задержка чтения ЖКИ
 #define LCD_DELAY       3                             
 
 // глобальные переменные (поля)
 // программаня задержка синуса
-volatile uint16_t pwmDelay = 1;                             
+volatile uint16_t pwmDelay = 50;                             
 // счётчик числа переполнений таймера
 volatile uint16_t mCount1ms = 0;                            
 // буфер вывода
