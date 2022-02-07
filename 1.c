@@ -47,7 +47,17 @@
 // стандартная надпись
 #define CAPTION         " speed (ms): 50" 
 // задержка чтения ЖКИ
-#define LCD_DELAY       3                             
+#define LCD_DELAY       3  
+// работа ЖКИ в две линии                           
+#define LCD_TWO_LINES   0x38
+// включение дисплея
+#define LCD_DISPLAY_ON  0x0C
+// очистка дисплея
+#define LCD_CLEAR       0x0C
+// возрат на начало
+#define LCD_RETURN      0x81
+// переход на новую строку
+#define LCD_NEW_LINE    0xC1
 
 // глобальные переменные (поля)
 // программаня задержка синуса
@@ -249,14 +259,7 @@ void out_port_b (unsigned char data)
  */
 void out_port_c (unsigned char data) 
 {
-  // маскируем вывод (чтобы не затронуть биты для ввода)
-  data = data & ((1 << RS) | (1 << RW) | (1 << E));
-  // заносим значения в порт C
-  PORTC = PORTC | data;
-  // снова маскируем вывод с целью выделить нулевые значения
-  data = ~data ^ ((1 << RS) | (1 << RW) | (1 << E));
-  // обнуляем (если есть) необходимые биты
-  PORTC = PORTC & data;
+  PORTC = data;
 }
 
 /**
@@ -442,13 +445,14 @@ void lcd_cmd (unsigned char command)
   // выводим команду на порт B
   out_port_b(command);
   // включаем режим чтения команд
-  out_port_c( ((0 << RS) | (0 << RW) | (1 << E)) );
+  PORTC = PORTC & ~((1 << RS) | (1 << RW));
+  PORTC = PORTC | (1 << E);
   
   // ждём пока прочитаем
   sync_timer1ms(LCD_DELAY);
 
   // выключаем режим чтения команд
-  out_port_c( (0 << RS) | (0 << RW) | (0 << E));
+  PORTC = PORTC & ~(1 << E);
 
 }
 
@@ -462,13 +466,14 @@ void lcd_data(unsigned char data)
   // вывод символа на порт B
   out_port_b(data);
   // включаем режим чтения данных
-  out_port_c( ((1 << RS) | (0 << RW) | (1 << E)) );
+  PORTC = PORTC & ~(1 << RW);
+  PORTC = PORTC | ((1 << RS) | (1 << E));
 
   // ждём пока прочитает
   sync_timer1ms(LCD_DELAY);
 
   // выключаем режим чтения данных
-  out_port_c( ((1 << RS) | (0 << RW) | (0 << E)) );
+  PORTC = PORTC & ~((1 << RS) | (1 << E));
 
 }
 
@@ -477,7 +482,7 @@ void lcd_data(unsigned char data)
  */
 void lcd_home(void)
 {
-  lcd_cmd(0x02);  // return home
+  lcd_cmd(LCD_NEW_LINE);  // возврат курсора на начало
 }
 
 /**
@@ -485,7 +490,7 @@ void lcd_home(void)
  */
 void lcd_new_line(void)
 {
-  lcd_cmd(0xC1); // next line
+  lcd_cmd(LCD_NEW_LINE); // начать с новой стоки
 }
 
 /**
@@ -494,10 +499,10 @@ void lcd_new_line(void)
  */
 void lcd_init()  
 {
-  lcd_cmd(0x38);  // две линии, 5х7
-  lcd_cmd(0x0C);  // включаем дисплей
-  lcd_cmd(0x01);  // очищаем
-  lcd_cmd(0x81);  // переводим курсор на позицию 1 линии 1
+  lcd_cmd(LCD_TWO_LINES);   // две линии, 5х7
+  lcd_cmd(LCD_DISPLAY_ON);  // включаем дисплей
+  lcd_cmd(LCD_CLEAR);       // очищаем
+  lcd_cmd(LCD_RETURN);      // переводим курсор на позицию 1 линии 1
 }
 
 /**
